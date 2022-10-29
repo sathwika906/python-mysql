@@ -96,7 +96,7 @@ def home():
 
         cursor = mysql.connection.cursor()
         #cursor.execute(''' INSERT INTO user VALUES(%f)''',(add))
-        cursor.execute('UPDATE project SET score = %s, remarks =%s  WHERE firstname=%s',(score,res,email))
+        cursor.execute('UPDATE project SET score = %s, remarks =%s  WHERE email=%s',(score,res,email))
         #cursor.execute('UPDATE user SET  username =% s, password =% s, email =% s,  WHERE id =% s', (username, password, email(session['id'], ), ))
         mysql.connection.commit()
         return render_template('result.html', add1=add,res=res,em=email)
