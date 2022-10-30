@@ -1,11 +1,14 @@
 
-from flask import Flask, render_template, redirect, url_for, request,logging,request
-import collections
-from flask_mysqldb import MySQL
-import MySQLdb.cursors
-# import pymongo
+# #from flask import uuid
+ from flask import Flask, render_template, redirect, url_for,request
+ from random import randint
 
-app = Flask(__name__, template_folder="templates")
+
+ from flask_mysqldb import MySQLs
+ import MySQLdb.cursors
+
+
+ app = Flask(__name__, template_folder="templates")
 
 app.config["MYSQL_HOST"] = "localhost"
 app.config["MYSQL_USER"] = "root"
@@ -42,9 +45,8 @@ def register():
     pin= " "
     score = " "
     remarks = ""
-    # patient_id=""
-    # if request.method == 'GET':
-    # return "Login via the login Form"
+    patient_id =""
+   
     if request.method == "POST":
         firstname = request.form["firstname"]
         middlename = request.form["middlename"]
@@ -55,8 +57,25 @@ def register():
         pin = request.form["pin"]
         proj(email)
         cursor = mysql.connection.cursor()
+        cursor.execute('SELECT patient_id from project')
+        pid=cursor.fetchall()
+         
+        if(len(pid)>0):
+            for i in pid:
+                id=random_n_digits(14)
+                if(id!=i):
+                    cursor.execute(' INSERT INTO project VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',(firstname,middlename,lastname,gender,email,birthday,pin,score,remarks,id))
+
+                    mysql.connection.commit()
+                    msg='You have successfully registered !'
+                    break
+                else:
+                    continue
+                
+    else:
+        id=random_n_digits(14) 
         cursor.execute(
-            " INSERT INTO project VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            " INSERT INTO project VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
             (
                 firstname,
                 middlename,
@@ -67,11 +86,21 @@ def register():
                 pin,
                 score,
                 remarks,
+                id,
             ),
         )
         mysql.connection.commit()
-
-    return render_template("index.html")
+        #uuidOne = uuid.uuid1()
+        ##print ("Printing my First UUID of version 1")
+        #print(uuidOne)
+    cursor.execute('SELECT patient_id from project WHERE email=%s',[email])
+    patient_id= cursor.fetchone()
+    return render_template('index.html',id=id)
+def random_n_digits(s):
+    range_start = 10**(s-1)
+    range_end = (10**s)-1
+    return randint(range_start, range_end)
+   # return render_template("index.html")
 
 
 @app.route("/index", methods=["GET", "POST"])
@@ -111,13 +140,5 @@ def back():
 
 
 if __name__ == "__main__":
-    #  try:
-    #     client = MongoClient("mongodb://localhost:27017")
-    #     db = client['patientData']
-    #     Collection = db["mysamecollectionforpatient"]
-    #     # client.server_info() #trigger exception if it cannot connect to database
-        
-    #  except Exception as e:
-    #     print(e)
-    #     print("Error - Cannot connect to database")
+   
      app.run(debug=True)
